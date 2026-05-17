@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
+const EMAIL_RETRY_SECONDS = 60;
+
 const stepsByMode = {
   login: [
     'Enter your email',
@@ -14,6 +16,29 @@ const stepsByMode = {
   ],
 };
 
+function explainAuthIssue(error) {
+  const raw = error?.message || 'Authentication failed.';
+  const normalized = raw.toLowerCase();
+
+  if (normalized.includes('email rate limit exceeded')) {
+    return `Too many auth emails were requested. Supabase usually enforces a ${EMAIL_RETRY_SECONDS}-second cooldown for the same signup email, and your project can also hit its hourly email cap. Wait 1 minute first. If it still fails, wait 10 to 30 minutes and try again.`;
+  }
+
+  if (normalized.includes('user already registered')) {
+    return 'This email already has an account. Switch to Login and use the same email and password.';
+  }
+
+  if (normalized.includes('email not confirmed')) {
+    return 'Your account exists but the email is not confirmed yet. Open the Supabase confirmation email, then login again.';
+  }
+
+  if (normalized.includes('invalid login credentials')) {
+    return 'Email or password is incorrect. If you created the account just now, confirm the email first and then login.';
+  }
+
+  return raw;
+}
+
 export default function AuthModal({ open, onClose, onSuccess }) {
   const [mode, setMode] = useState('login');
   const [name, setName] = useState('');
@@ -22,6 +47,7 @@ export default function AuthModal({ open, onClose, onSuccess }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [emailCooldownUntil, setEmailCooldownUntil] = useState(null);
   const authAvailable = Boolean(supabase);
 
   useEffect(() => {
@@ -34,6 +60,10 @@ export default function AuthModal({ open, onClose, onSuccess }) {
     return mode === 'login' ? 'Login to Continue' : 'Create Account';
   }, [loading, mode]);
 
+  const cooldownSecondsLeft = emailCooldownUntil
+    ? Math.max(0, Math.ceil((emailCooldownUntil - Date.now()) / 1000))
+    : 0;
+
   if (!open) return null;
 
   async function handleSubmit(event) {
@@ -45,6 +75,11 @@ export default function AuthModal({ open, onClose, onSuccess }) {
     }
 
     if (mode === 'signup') {
+      if (cooldownSecondsLeft > 0) {
+        setMessage(`Please wait ${cooldownSecondsLeft} seconds before requesting another signup email.`);
+        return;
+      }
+
       if (!name.trim()) {
         setMessage('Please enter your name.');
         return;
@@ -91,16 +126,19 @@ export default function AuthModal({ open, onClose, onSuccess }) {
       }
 
       const signedInNow = Boolean(data.session);
+      if (!signedInNow) {
+        setEmailCooldownUntil(Date.now() + EMAIL_RETRY_SECONDS * 1000);
+      }
       onSuccess?.({
         mode,
         session: data.session,
         user: data.user,
         confirmation: signedInNow
           ? 'Account created successfully. You are now signed in.'
-          : 'Account created successfully. Please confirm your email, then login.',
+          : 'Account created successfully. Check your email for confirmation, then login with the same details.',
       });
     } catch (error) {
-      setMessage(error.message || 'Authentication failed.');
+      setMessage(explainAuthIssue(error));
     } finally {
       setLoading(false);
     }
@@ -118,6 +156,10 @@ export default function AuthModal({ open, onClose, onSuccess }) {
         <p className="muted">
           Use signup once to create your account. Next time, login with the same email and password
           to continue from your saved history.
+        </p>
+
+        <p className="muted tiny">
+          Supabase auth note: signup confirmation emails usually have a 60-second per-email cooldown.
         </p>
 
         <div className="auth-steps">
@@ -213,6 +255,12 @@ export default function AuthModal({ open, onClose, onSuccess }) {
             {actionLabel}
           </button>
         </form>
+
+        {mode === 'signup' && cooldownSecondsLeft > 0 ? (
+          <p className="auth-footer-note">
+            Please wait {cooldownSecondsLeft} seconds before asking Supabase to send another signup email.
+          </p>
+        ) : null}
 
         <p className="auth-footer-note">
           {mode === 'login'
