@@ -22,6 +22,16 @@ export default function App() {
   const [message, setMessage] = useState('');
   const [activePanel, setActivePanel] = useState('history');
   const hasSupabaseAuth = Boolean(supabase);
+  const profileName =
+    session?.user?.user_metadata?.full_name ||
+    session?.user?.email?.split('@')[0] ||
+    'Guest user';
+  const profileInitials = profileName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('') || 'GU';
 
   useEffect(() => {
     if (!supabase) return undefined;
@@ -154,24 +164,35 @@ export default function App() {
         <header className="topbar">
           <div className="brand-lockup">
             <span className="brand-mark">TF</span>
-            <div>
+            <div className="brand-copy">
               <p className="eyebrow compact">Transcript Flow</p>
-              <strong>{session?.user?.email || 'Guest mode'}</strong>
+              <strong>{session ? profileName : 'Guest mode'}</strong>
             </div>
           </div>
 
-          {session ? (
-            <button className="ghost-button" type="button" onClick={handleLogout}>
-              Logout
-            </button>
-          ) : (
-            <button className="login-chip" type="button" onClick={openManualLogin}>
-              <span className="login-icon" aria-hidden="true">
-                ◐
-              </span>
-              <span>Login</span>
-            </button>
-          )}
+          <div className="topbar-actions">
+            {session ? (
+              <div className="profile-chip">
+                <span className="profile-avatar" aria-hidden="true">
+                  {profileInitials}
+                </span>
+                <div className="profile-copy">
+                  <strong>{profileName}</strong>
+                  <span>{session.user.email}</span>
+                </div>
+                <button className="ghost-button" type="button" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button className="login-chip" type="button" onClick={openManualLogin}>
+                <span className="login-icon" aria-hidden="true">
+                  LG
+                </span>
+                <span>Login / Signup</span>
+              </button>
+            )}
+          </div>
         </header>
 
         <section className="hero-card">
@@ -323,9 +344,9 @@ export default function App() {
       <AuthModal
         open={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        onSuccess={() => {
+        onSuccess={({ confirmation }) => {
           setAuthModalOpen(false);
-          setMessage('Authentication complete. You can now generate your transcript.');
+          setMessage(confirmation || 'Authentication complete. You can now generate your transcript.');
         }}
       />
     </div>

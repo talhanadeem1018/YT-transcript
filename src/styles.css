@@ -24,6 +24,7 @@ body {
   min-height: 100vh;
   color: var(--text);
   background: transparent;
+  overflow-x: hidden;
 }
 
 button,
@@ -42,6 +43,7 @@ input {
   color: #29170f;
   font-weight: 800;
   letter-spacing: 0.01em;
+  text-wrap: balance;
 }
 
 .app-shell {
@@ -66,12 +68,20 @@ input {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 18px;
+  flex-wrap: wrap;
 }
 
 .brand-lockup {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
+}
+
+.brand-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
 }
 
 .brand-mark {
@@ -103,6 +113,13 @@ input {
   cursor: pointer;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+}
+
 .login-icon {
   display: grid;
   place-items: center;
@@ -112,11 +129,50 @@ input {
   background: rgba(255, 145, 82, 0.18);
   color: var(--accent-soft);
   font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 14px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 145, 82, 0.95), rgba(255, 199, 133, 0.85));
+  color: #24150f;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.profile-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-copy span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hero-card {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.95fr);
   gap: 24px;
   padding: 30px;
   border-radius: 32px;
@@ -147,6 +203,7 @@ input {
   max-width: 10ch;
   font-size: clamp(2.2rem, 4.4vw, 4.6rem);
   line-height: 1;
+  text-wrap: balance;
 }
 
 .eyebrow {
@@ -193,6 +250,7 @@ input {
   border-radius: 24px;
   align-self: end;
   background: rgba(255, 255, 255, 0.07);
+  min-width: 0;
 }
 
 .input-card label,
@@ -211,6 +269,7 @@ input {
 
 input {
   width: 100%;
+  min-width: 0;
   padding: 16px 18px;
   border-radius: 18px;
   border: 1px solid var(--border);
@@ -256,7 +315,7 @@ input {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1.35fr 0.95fr;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.95fr);
   gap: 24px;
   margin-top: 24px;
 }
@@ -311,6 +370,7 @@ input {
   border: 1px solid var(--border);
   background: rgba(11, 11, 15, 0.72);
   white-space: pre-wrap;
+  word-break: break-word;
   line-height: 1.75;
   color: #f8f2e8;
 }
@@ -321,6 +381,7 @@ input {
 
 .panel-switch {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 14px;
 }
@@ -330,6 +391,8 @@ input {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
   color: var(--text);
+  flex: 1 1 180px;
+  text-align: center;
 }
 
 .tab.active {
@@ -396,6 +459,8 @@ input {
 
 .modal-card {
   width: min(540px, 100%);
+  max-height: min(92vh, 860px);
+  overflow-y: auto;
   padding: 28px;
   border-radius: 30px;
   border: 1px solid var(--border);
@@ -409,25 +474,85 @@ input {
   gap: 14px;
 }
 
+.auth-steps {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+}
+
+.auth-step {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.auth-step span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(255, 145, 82, 0.18);
+  color: var(--accent-soft);
+  font-weight: 800;
+}
+
+.auth-step p {
+  margin: 0;
+  color: var(--text);
+}
+
 .auth-toggle {
   grid-template-columns: repeat(2, 1fr);
   margin: 20px 0 18px;
+}
+
+.auth-footer-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 .close-button {
   float: right;
 }
 
-@media (max-width: 980px) {
-  .topbar,
-  .hero-card,
-  .dashboard-grid {
+@media (max-width: 1120px) {
+  .hero-card {
     grid-template-columns: 1fr;
   }
 
+  .hero-copy h1 {
+    max-width: 12ch;
+  }
+
+  .input-card {
+    width: 100%;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 980px) {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .topbar-actions,
+  .profile-chip {
+    width: 100%;
+  }
+
+  .profile-chip {
+    justify-content: space-between;
   }
 
   .stats-grid {
@@ -441,6 +566,12 @@ input {
     padding-top: 20px;
   }
 
+  .promo-strip {
+    padding: 12px 14px;
+    font-size: 0.92rem;
+    line-height: 1.35;
+  }
+
   .hero-card,
   .transcript-card,
   .panel-card,
@@ -448,6 +579,27 @@ input {
   .modal-card {
     border-radius: 22px;
     padding: 18px;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
+
+  .hero-copy h1 {
+    max-width: none;
+    font-size: clamp(1.9rem, 9vw, 2.8rem);
+  }
+
+  .hero-points {
+    gap: 8px;
+  }
+
+  .hero-points span {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 
   .input-row {
@@ -460,6 +612,84 @@ input {
   }
 
   .transcript-box {
-    min-height: 300px;
+    min-height: 260px;
+    padding: 18px;
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .tab {
+    flex-basis: 100%;
+  }
+
+  .profile-chip {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .profile-chip .ghost-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .login-chip,
+  .topbar-actions {
+    width: 100%;
+  }
+
+  .login-chip {
+    justify-content: center;
+  }
+
+  .auth-step {
+    grid-template-columns: 28px 1fr;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .auth-step span {
+    width: 28px;
+    height: 28px;
+  }
+
+  .auth-toggle {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .app-shell {
+    width: calc(100% - 16px);
+  }
+
+  .promo-strip {
+    font-size: 0.86rem;
+  }
+
+  .hero-card,
+  .transcript-card,
+  .panel-card,
+  .input-card,
+  .modal-card {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  input,
+  .primary-button,
+  .ghost-button,
+  .login-chip,
+  .tab {
+    width: 100%;
+  }
+
+  .brand-lockup {
+    gap: 10px;
+  }
+
+  .brand-copy strong,
+  .profile-copy strong {
+    font-size: 0.96rem;
   }
 }
